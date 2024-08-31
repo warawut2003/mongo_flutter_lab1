@@ -4,12 +4,44 @@ import 'package:flutter_mongo_lab1/Page/login_screen.dart';
 import 'package:flutter_mongo_lab1/Widget/customCliper.dart';
 import 'dart:math';
 
-class RegisterPage extends StatelessWidget {
+import 'package:flutter_mongo_lab1/controllers/auth_controller.dart';
+
+class RegisterPage extends StatefulWidget {
+  const RegisterPage({Key? key}) : super(key: key);
+
+  @override
+  _RegisterPage createState() => _RegisterPage();
+}
+
+class _RegisterPage extends State<RegisterPage> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController nameController = TextEditingController();
   final TextEditingController roleController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+
+  void _register() async {
+    if (_formKey.currentState!.validate()) {
+      print('Username : ${usernameController.text}');
+      print('Password : ${passwordController.text}');
+      print('name : ${nameController.text}');
+      print('role : ${roleController.text}');
+      print('email : ${emailController.text}');
+
+      try {
+        final user = await AuthController().register(
+            context,
+            usernameController.text,
+            passwordController.text,
+            nameController.text,
+            roleController.text,
+            emailController.text);
+      } catch (e) {
+        print(e);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,224 +79,263 @@ class RegisterPage extends StatelessWidget {
             Container(
               padding: EdgeInsets.symmetric(horizontal: 40),
               child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    SizedBox(height: height * .2),
-                    RichText(
-                      textAlign: TextAlign.center,
-                      text: TextSpan(
-                        text: 'T-Dat',
-                        style: TextStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xff14279B),
-                        ),
-                        children: [
-                          TextSpan(
-                            text: 'app',
-                            style: TextStyle(color: Colors.black, fontSize: 30),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      SizedBox(height: height * .2),
+                      RichText(
+                        textAlign: TextAlign.center,
+                        text: TextSpan(
+                          text: 'T-Dat',
+                          style: TextStyle(
+                            fontSize: 30,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xff14279B),
                           ),
-                        ],
+                          children: [
+                            TextSpan(
+                              text: 'app',
+                              style:
+                                  TextStyle(color: Colors.black, fontSize: 30),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    SizedBox(
-                      height: 50,
-                    ),
-                    Column(
-                      children: <Widget>[
-                        Container(
-                          margin: EdgeInsets.symmetric(vertical: 10),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Text(
-                                "Username",
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 15),
-                              ),
-                              SizedBox(
-                                height: 10,
-                              ),
-                              TextField(
+                      SizedBox(
+                        height: 50,
+                      ),
+                      Column(
+                        children: <Widget>[
+                          Container(
+                            margin: EdgeInsets.symmetric(vertical: 10),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Text(
+                                  "Username",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 15),
+                                ),
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                TextFormField(
                                   controller: usernameController,
                                   obscureText: false,
                                   decoration: InputDecoration(
                                       border: InputBorder.none,
                                       fillColor: Color(0xfff3f3f4),
-                                      filled: true))
-                            ],
+                                      filled: true),
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please enter your username';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        Container(
-                          margin: EdgeInsets.symmetric(vertical: 10),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Text(
-                                "Password",
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 15),
-                              ),
-                              SizedBox(
-                                height: 10,
-                              ),
-                              TextField(
+                          Container(
+                            margin: EdgeInsets.symmetric(vertical: 10),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Text(
+                                  "Password",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 15),
+                                ),
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                TextFormField(
                                   controller: passwordController,
                                   obscureText: true,
                                   decoration: InputDecoration(
                                       border: InputBorder.none,
                                       fillColor: Color(0xfff3f3f4),
-                                      filled: true))
-                            ],
+                                      filled: true),
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please enter your password';
+                                    }
+                                    return null;
+                                  },
+                                )
+                              ],
+                            ),
                           ),
-                        ),
-                        Container(
-                          margin: EdgeInsets.symmetric(vertical: 10),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Text(
-                                "name",
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 15),
-                              ),
-                              SizedBox(
-                                height: 10,
-                              ),
-                              TextField(
+                          Container(
+                            margin: EdgeInsets.symmetric(vertical: 10),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Text(
+                                  "name",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 15),
+                                ),
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                TextFormField(
                                   controller: nameController,
                                   obscureText: false,
                                   decoration: InputDecoration(
                                       border: InputBorder.none,
                                       fillColor: Color(0xfff3f3f4),
-                                      filled: true))
-                            ],
+                                      filled: true),
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please enter your name';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        Container(
-                          margin: EdgeInsets.symmetric(vertical: 10),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Text(
-                                "role",
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 15),
-                              ),
-                              SizedBox(
-                                height: 10,
-                              ),
-                              TextField(
+                          Container(
+                            margin: EdgeInsets.symmetric(vertical: 10),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Text(
+                                  "role",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 15),
+                                ),
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                TextFormField(
                                   controller: roleController,
                                   obscureText: false,
                                   decoration: InputDecoration(
                                       border: InputBorder.none,
                                       fillColor: Color(0xfff3f3f4),
-                                      filled: true))
-                            ],
+                                      filled: true),
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please enter your role';
+                                    }
+                                    return null;
+                                  },
+                                )
+                              ],
+                            ),
                           ),
-                        ),
-                        Container(
-                          margin: EdgeInsets.symmetric(vertical: 10),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Text(
-                                "Email address",
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 15),
-                              ),
-                              SizedBox(
-                                height: 10,
-                              ),
-                              TextField(
+                          Container(
+                            margin: EdgeInsets.symmetric(vertical: 10),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Text(
+                                  "Email address",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 15),
+                                ),
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                TextFormField(
                                   controller: emailController,
                                   keyboardType: TextInputType.emailAddress,
                                   obscureText: false,
                                   decoration: InputDecoration(
                                       border: InputBorder.none,
                                       fillColor: Color(0xfff3f3f4),
-                                      filled: true))
+                                      filled: true),
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please enter your email';
+                                    }
+                                    return null;
+                                  },
+                                )
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                        height: 20,
+                      ),
+                      GestureDetector(
+                        onTap: _register,
+                        child: Container(
+                          width: MediaQuery.of(context).size.width,
+                          padding: EdgeInsets.symmetric(vertical: 15),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.all(Radius.circular(5)),
+                            boxShadow: <BoxShadow>[
+                              BoxShadow(
+                                  color: Colors.grey.shade200,
+                                  offset: Offset(2, 4),
+                                  blurRadius: 5,
+                                  spreadRadius: 2)
+                            ],
+                            gradient: LinearGradient(
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                              colors: [
+                                Color(0xff14279B),
+                                Color(0xff14279B),
+                              ],
+                            ),
+                          ),
+                          child: Text(
+                            'Register Now',
+                            style: TextStyle(fontSize: 20, color: Colors.white),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: height * .02),
+                      InkWell(
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => LoginScreen()));
+                        },
+                        child: Container(
+                          margin: EdgeInsets.symmetric(vertical: 20),
+                          padding: EdgeInsets.all(15),
+                          alignment: Alignment.bottomCenter,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              Text(
+                                'Already have an account ?',
+                                style: TextStyle(
+                                    fontSize: 13, fontWeight: FontWeight.w600),
+                              ),
+                              SizedBox(
+                                width: 10,
+                              ),
+                              Text(
+                                'Login',
+                                style: TextStyle(
+                                    color: Color(0xff14279B),
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600),
+                              ),
                             ],
                           ),
                         ),
-                      ],
-                    ),
-                    SizedBox(
-                      height: 20,
-                    ),
-                    GestureDetector(
-                      onTap: () => Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => LoginScreen(),
-                        ),
                       ),
-                      child: Container(
-                        width: MediaQuery.of(context).size.width,
-                        padding: EdgeInsets.symmetric(vertical: 15),
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.all(Radius.circular(5)),
-                          boxShadow: <BoxShadow>[
-                            BoxShadow(
-                                color: Colors.grey.shade200,
-                                offset: Offset(2, 4),
-                                blurRadius: 5,
-                                spreadRadius: 2)
-                          ],
-                          gradient: LinearGradient(
-                            begin: Alignment.centerLeft,
-                            end: Alignment.centerRight,
-                            colors: [
-                              Color(0xff14279B),
-                              Color(0xff14279B),
-                            ],
-                          ),
-                        ),
-                        child: Text(
-                          'Register Now',
-                          style: TextStyle(fontSize: 20, color: Colors.white),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: height * .02),
-                    InkWell(
-                      onTap: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => LoginScreen()));
-                      },
-                      child: Container(
-                        margin: EdgeInsets.symmetric(vertical: 20),
-                        padding: EdgeInsets.all(15),
-                        alignment: Alignment.bottomCenter,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            Text(
-                              'Already have an account ?',
-                              style: TextStyle(
-                                  fontSize: 13, fontWeight: FontWeight.w600),
-                            ),
-                            SizedBox(
-                              width: 10,
-                            ),
-                            Text(
-                              'Login',
-                              style: TextStyle(
-                                  color: Color(0xff14279B),
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

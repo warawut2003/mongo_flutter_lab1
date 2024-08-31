@@ -26,21 +26,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
       try {
         final user = await AuthController()
-            .login(_usernameController.text, _passwordController.text);
+            .login(context, _usernameController.text, _passwordController.text);
       } catch (e) {
         print(e);
       }
-      // if (username == "admin" && password == "123456") {
-      //   Navigator.pushReplacement(
-      //     context,
-      //     MaterialPageRoute(builder: (context) => HomeScreen()),
-      //   );
-      // } else {
-      //   // Show error if credentials are incorrect
-      //   ScaffoldMessenger.of(context).showSnackBar(
-      //     SnackBar(content: Text('Invalid username or password')),
-      //   );
-      // }
     }
   }
 
