@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_mongo_lab1/Page/Admin.dart';
+import 'package:flutter_mongo_lab1/Page/AddProductPage.dart';
+import 'package:flutter_mongo_lab1/Page/EditProductPage.dart';
+import 'package:flutter_mongo_lab1/Page/home_admin.dart';
 
 import 'package:flutter_mongo_lab1/Page/home_screen.dart';
 import 'package:flutter_mongo_lab1/Page/login_screen.dart';
@@ -23,7 +25,9 @@ class MyApp extends StatelessWidget {
           '/home': (context) => HomeScreen(),
           '/login': (context) => LoginScreen(),
           '/register': (context) => RegisterPage(),
-          '/admin': (context) => AdminSrceen(),
+          '/admin': (context) => HomeAdmin(),
+          '/add_product': (context) => AddProductPage(),
+          '/edit_product': (context) => EditProductPage(),
         });
   }
 }

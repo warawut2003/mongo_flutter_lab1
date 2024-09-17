@@ -21,11 +21,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _login() async {
     if (_formKey.currentState!.validate()) {
-      print('Username : ${_usernameController.text}');
-      print('Password : ${_passwordController.text}');
-
       try {
-        final user = await AuthController()
+        await AuthController()
             .login(context, _usernameController.text, _passwordController.text);
       } catch (e) {
         print(e);
