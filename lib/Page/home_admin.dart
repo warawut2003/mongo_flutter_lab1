@@ -2,6 +2,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:flutter_mongo_lab1/Widget/customCliper.dart';
+import 'package:flutter_mongo_lab1/controllers/auth_controller.dart';
+import 'package:flutter_mongo_lab1/models/user_model.dart';
+import 'package:flutter_mongo_lab1/providers/user_provider.dart';
+import 'package:provider/provider.dart';
 
 class HomeAdmin extends StatelessWidget {
   const HomeAdmin({super.key});
@@ -125,7 +129,65 @@ class HomeAdmin extends StatelessWidget {
                         ],
                       ),
                     ),
+
                     SizedBox(height: 20),
+
+                    Consumer<UserProvider>(
+                      builder: (context, UserProvider, _) {
+                        return Column(
+                          children: [
+                            Text(
+                              'Access Token : ',
+                              style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              '${UserProvider.accessToken}',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Color(0xff821131),
+                              ),
+                            ),
+                            SizedBox(height: 15),
+                            Text(
+                              'Refresh Token : ',
+                              style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              '${UserProvider.refreshToken}',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Color(0xffFABC3F),
+                              ),
+                            ),
+                            SizedBox(
+                              height: 20,
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                AuthController().refreshToken(context);
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xff821131),
+                              ),
+                              child: Text(
+                                'Update Token',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            )
+                          ],
+                        );
+                      },
+                    ),
+
+                    SizedBox(
+                      height: 20,
+                    ),
                     // Button to add new product
                     ElevatedButton(
                       onPressed: () {

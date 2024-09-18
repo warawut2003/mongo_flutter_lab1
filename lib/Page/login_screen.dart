@@ -6,6 +6,9 @@ import 'package:flutter_mongo_lab1/Page/home_screen.dart';
 import 'package:flutter_mongo_lab1/Page/register.dart';
 import 'package:flutter_mongo_lab1/Widget/customCliper.dart';
 import 'package:flutter_mongo_lab1/controllers/auth_controller.dart';
+import 'package:flutter_mongo_lab1/providers/user_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_mongo_lab1/models/user_model.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -22,8 +25,27 @@ class _LoginScreenState extends State<LoginScreen> {
   void _login() async {
     if (_formKey.currentState!.validate()) {
       try {
-        await AuthController()
+        UserModel userModel = await AuthController()
             .login(context, _usernameController.text, _passwordController.text);
+
+        if (!mounted) return;
+
+        // ตรวจสอบ role ของผู้ใช้
+        String role = userModel.user.role;
+        print("role :$role");
+
+        // อัปเดตสถานะการเข้าสู่ระบบของผู้ใช้
+        Provider.of<UserProvider>(context, listen: false).onLogin(userModel);
+
+        // นำทางไปยังหน้าตาม role ของผู้ใช้
+        if (role == 'admin') {
+          Navigator.pushReplacementNamed(context, '/admin');
+        } else if (role == 'user') {
+          Navigator.pushReplacementNamed(context, '/home');
+        } else {
+          // กรณีที่ role ไม่ตรงกับที่คาดไว้
+          print('Error: Unknown role');
+        }
       } catch (e) {
         print(e);
       }

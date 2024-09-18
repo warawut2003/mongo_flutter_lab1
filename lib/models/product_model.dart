@@ -15,8 +15,6 @@ class ProductModel {
   String productType;
   int price;
   String unit;
-  DateTime createdAt;
-  DateTime updatedAt;
 
   ProductModel({
     required this.id,
@@ -24,8 +22,6 @@ class ProductModel {
     required this.productType,
     required this.price,
     required this.unit,
-    required this.createdAt,
-    required this.updatedAt,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) => ProductModel(
@@ -34,8 +30,6 @@ class ProductModel {
         productType: json["product_type"],
         price: json["price"],
         unit: json["unit"],
-        createdAt: DateTime.parse(json["createdAt"]),
-        updatedAt: DateTime.parse(json["updatedAt"]),
       );
 
   Map<String, dynamic> toJson() => {
@@ -44,7 +38,5 @@ class ProductModel {
         "product_type": productType,
         "price": price,
         "unit": unit,
-        "createdAt": createdAt.toIso8601String(),
-        "updatedAt": updatedAt.toIso8601String(),
       };
 }
