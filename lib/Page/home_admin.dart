@@ -1,14 +1,32 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_mongo_lab1/Page/EditProductPage.dart';
 import 'dart:math';
 import 'package:flutter_mongo_lab1/Widget/customCliper.dart';
 import 'package:flutter_mongo_lab1/controllers/auth_controller.dart';
 import 'package:flutter_mongo_lab1/models/user_model.dart';
 import 'package:flutter_mongo_lab1/providers/user_provider.dart';
+import 'package:flutter_mongo_lab1/models/product_model.dart';
+import 'package:flutter_mongo_lab1/controllers/product_controller.dart';
 import 'package:provider/provider.dart';
 
-class HomeAdmin extends StatelessWidget {
+class HomeAdmin extends StatefulWidget {
   const HomeAdmin({super.key});
+
+  @override
+  _HomeAdminState createState() => _HomeAdminState();
+}
+
+class _HomeAdminState extends State<HomeAdmin> {
+  List<ProductModel> products = [];
+  bool isLoading = true;
+  String? errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchProducts();
+  }
 
   Future<void> _showLogoutConfirmationDialog(BuildContext context) async {
     return showDialog<void>(
@@ -28,9 +46,10 @@ class HomeAdmin extends StatelessWidget {
             TextButton(
               child: const Text('ออกจากระบบ'),
               onPressed: () {
-                Navigator.of(context).pop(); // close the dialog
-                Navigator.popAndPushNamed(
-                    context, '/login'); // navigate to login screen
+                Provider.of<UserProvider>(context, listen: false)
+                    .onLogout(); // เรียกฟังก์ชัน logout จาก controller
+
+                Navigator.pushReplacementNamed(context, '/login');
               },
             ),
           ],
@@ -39,38 +58,79 @@ class HomeAdmin extends StatelessWidget {
     );
   }
 
+  Future<void> _fetchProducts() async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    try {
+      final productList = await ProductController().getProducts(context);
+      setState(() {
+        products = productList;
+        isLoading = false;
+      });
+    } catch (error) {
+      setState(() {
+        errorMessage = 'Error fetching products: $error';
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error fetching products: $error')));
+    }
+  }
+
+  // ฟังก์ชันสำหรับการแก้ไขสินค้า
+  void updateProduct(ProductModel product) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => EditProductPage(product: product),
+      ),
+    );
+  }
+
+  Future<void> deleteProduct(ProductModel product) async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+
+    // แสดงกล่องยืนยันก่อนทำการลบ
+    final confirmDelete = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('ยืนยันการลบสินค้า'),
+          content: const Text('คุณแน่ใจหรือไม่ว่าต้องการลบสินค้านี้?'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('ยกเลิก'),
+              onPressed: () {
+                Navigator.of(context).pop(false); // ปิดกล่องและส่งค่ากลับ false
+              },
+            ),
+            TextButton(
+              child: const Text('ลบ'),
+              onPressed: () {
+                Navigator.of(context).pop(true); // ปิดกล่องและส่งค่ากลับ true
+              },
+            ),
+          ],
+        );
+      },
+    );
+
+    // ถ้าผู้ใช้ยืนยันการลบ
+    if (confirmDelete == true) {
+      try {
+        await ProductController().deleteProduct(context, product.id);
+        // เรียกใช้งาน _fetchProducts เพื่อดึงข้อมูลสินค้าใหม่
+        await _fetchProducts();
+
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('ลบสินค้าสำเร็จ')));
+      } catch (error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error deleting product: $error')));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final List<Map<String, dynamic>> products = [
-      {
-        'id': '1',
-        'productName': 'Product 1',
-        'productType': 'Electronics',
-        'price': 200,
-        'unit': 'pcs',
-        'createdAt': DateTime.now().subtract(Duration(days: 1)),
-        'updatedAt': DateTime.now(),
-      },
-      {
-        'id': '2',
-        'productName': 'Product 2',
-        'productType': 'Clothing',
-        'price': 300,
-        'unit': 'pcs',
-        'createdAt': DateTime.now().subtract(Duration(days: 2)),
-        'updatedAt': DateTime.now(),
-      },
-      {
-        'id': '3',
-        'productName': 'Product 3',
-        'productType': 'Books',
-        'price': 100,
-        'unit': 'pcs',
-        'createdAt': DateTime.now().subtract(Duration(days: 5)),
-        'updatedAt': DateTime.now(),
-      },
-    ];
-
     final height = MediaQuery.of(context).size.height;
     final width = MediaQuery.of(context).size.width;
 
@@ -203,85 +263,13 @@ class HomeAdmin extends StatelessWidget {
                     ),
                     SizedBox(height: 20),
                     // Products List
-                    Column(
-                      children: List.generate(products.length, (index) {
-                        return Container(
-                          padding: EdgeInsets.all(8.0),
-                          decoration: BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(
-                                color: Color.fromARGB(255, 225, 215, 183),
-                                width: 1.0,
-                              ),
-                            ),
-                          ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      products[index]['productName']!,
-                                      style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: Color(0xffC7253E)),
-                                    ),
-                                    Text(
-                                      'ประเภท: ${products[index]['productType']}',
-                                      style: TextStyle(fontSize: 14),
-                                    ),
-                                    Text(
-                                      'ราคา: \$${products[index]['price']}',
-                                      style: TextStyle(fontSize: 14),
-                                    ),
-                                    Text(
-                                      'หน่วย: ${products[index]['unit']}',
-                                      style: TextStyle(fontSize: 14),
-                                    ),
-                                    Text(
-                                      'สร้างเมื่อ: ${products[index]['createdAt']}',
-                                      style: TextStyle(fontSize: 12),
-                                    ),
-                                    Text(
-                                      'แก้ไขล่าสุด: ${products[index]['updatedAt']}',
-                                      style: TextStyle(fontSize: 12),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              // Edit Button
-                              IconButton(
-                                icon: Icon(
-                                  Icons.edit,
-                                  color: Color(0xffFABC3F),
-                                ),
-                                onPressed: () {
-                                  Navigator.pushNamed(
-                                    context,
-                                    '/edit_product',
-                                  );
-                                },
-                              ),
-                              // Delete Button
-                              IconButton(
-                                icon: Icon(
-                                  Icons.delete,
-                                  color: Color(0xff821131),
-                                ),
-                                onPressed: () {
-                                  // Handle delete functionality
-                                  print(
-                                      'Delete product: ${products[index]['id']}');
-                                },
-                              ),
-                            ],
-                          ),
-                        );
-                      }),
-                    ),
+                    // Display products or loading/error message
+                    if (isLoading)
+                      CircularProgressIndicator()
+                    else if (errorMessage != null)
+                      Text(errorMessage!)
+                    else
+                      _buildProductList(),
                   ],
                 ),
               ),
@@ -305,6 +293,75 @@ class HomeAdmin extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildProductList() {
+    return Column(
+      children: List.generate(products.length, (index) {
+        final product = products[index];
+        return Container(
+          padding: EdgeInsets.all(8.0),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: Color.fromARGB(255, 225, 215, 183),
+                width: 1.0,
+              ),
+            ),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      product.productName,
+                      style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xffC7253E)),
+                    ),
+                    Text(
+                      'ประเภท: ${product.productType}',
+                      style: TextStyle(fontSize: 14),
+                    ),
+                    Text(
+                      'ราคา: \$${product.price}',
+                      style: TextStyle(fontSize: 14),
+                    ),
+                    Text(
+                      'หน่วย: ${product.unit}',
+                      style: TextStyle(fontSize: 14),
+                    ),
+                  ],
+                ),
+              ),
+              // Edit and Delete buttons (same as before)
+              IconButton(
+                icon: Icon(
+                  Icons.edit,
+                  color: Color(0xffFABC3F),
+                ),
+                onPressed: () {
+                  updateProduct(product); // เรียกฟังก์ชันแก้ไข
+                },
+              ),
+              IconButton(
+                icon: Icon(
+                  Icons.delete,
+                  color: Color(0xff821131),
+                ),
+                onPressed: () {
+                  deleteProduct(product); // เรียกฟังก์ชันลบ
+                },
+              ),
+            ],
+          ),
+        );
+      }),
     );
   }
 }

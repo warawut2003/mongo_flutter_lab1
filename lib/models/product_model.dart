@@ -13,7 +13,7 @@ class ProductModel {
   String id;
   String productName;
   String productType;
-  int price;
+  double price;
   String unit;
 
   ProductModel({
@@ -28,7 +28,7 @@ class ProductModel {
         id: json["_id"],
         productName: json["product_name"],
         productType: json["product_type"],
-        price: json["price"],
+        price: json["price"].toDouble(), // แปลงค่า price ให้เป็น double
         unit: json["unit"],
       );
 

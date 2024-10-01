@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:flutter_mongo_lab1/Widget/customCliper.dart'; // Assuming you already have customClipper
+import 'package:flutter_mongo_lab1/controllers/product_controller.dart';
 
 class AddProductPage extends StatefulWidget {
   @override
@@ -9,10 +10,49 @@ class AddProductPage extends StatefulWidget {
 
 class _AddProductPageState extends State<AddProductPage> {
   final _formKey = GlobalKey<FormState>();
+  final ProductController _productController =
+      ProductController(); // Create ProductController instance
   String productName = '';
   String productType = '';
-  int price = 0;
+  double price = 0.00;
   String unit = '';
+
+  // แยกฟังก์ชันสำหรับเพิ่มสินค้า
+  void _addNewProduct() {
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+
+      // บันทึกข้อมูลสินค้าใหม่โดยเรียกฟังก์ชัน insertProduct
+      _productController.InsertProduct(
+        context,
+        productName,
+        productType,
+        price,
+        unit,
+      ).then((_) {
+        // Success action here (e.g. navigate back or show success message)
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('เพิ่มสินค้าเรียบร้อยแล้ว')),
+        );
+        Navigator.pushReplacementNamed(context, '/admin');
+      }).catchError((error) {
+        // Check if the error is due to expired token
+        if (error.toString().contains('401')) {
+          // Token หมดอายุ ให้กลับไปยังหน้าจอ login
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('token หมดอายุแล้ว กรุณา login ใหม่')),
+          );
+          Navigator.pushNamedAndRemoveUntil(
+              context, '/login', (route) => false);
+        } else {
+          // Error action here (e.g. show error message)
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('เกิดข้อผิดพลาด: $error')),
+          );
+        }
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -118,7 +158,7 @@ class _AddProductPageState extends State<AddProductPage> {
                               return null;
                             },
                             onSaved: (value) {
-                              price = int.parse(value!);
+                              price = double.parse(value!);
                             },
                           ),
                           SizedBox(height: 16),
@@ -135,30 +175,54 @@ class _AddProductPageState extends State<AddProductPage> {
                             },
                           ),
                           SizedBox(height: 30),
-                          ElevatedButton(
-                            onPressed: () {
-                              if (_formKey.currentState!.validate()) {
-                                _formKey.currentState!.save();
-                                // บันทึกข้อมูลสินค้าใหม่
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Color(0xff821131),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 24.0, vertical: 12.0),
-                              child: Text(
-                                'บันทึก',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.white,
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              ElevatedButton(
+                                onPressed: _addNewProduct,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Color(0xff821131),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 24.0, vertical: 12.0),
+                                  child: Text(
+                                    'บันทึก',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      color: Colors.white,
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
+                              ElevatedButton(
+                                onPressed: () {
+                                  Navigator.pushReplacementNamed(context,
+                                      '/admin'); // เปลี่ยนไปยังหน้าแสดงสินค้า
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      Color.fromRGBO(103, 103, 103, 1),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 24.0, vertical: 12.0),
+                                  child: Text(
+                                    'ยกเลิก',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              )
+                            ],
                           ),
                         ],
                       ),

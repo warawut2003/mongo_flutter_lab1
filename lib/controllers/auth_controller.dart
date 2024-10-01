@@ -84,13 +84,6 @@ class AuthController {
     }
   }
 
-  // Function to logout (optional)
-  Future<void> logout() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.remove('accessToken');
-    await prefs.remove('refreshToken');
-  }
-
   Future<void> refreshToken(BuildContext context) async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
 
