@@ -101,6 +101,9 @@ class AuthController {
 
       final accessToken = data['accessToken'];
       userProvider.updateAccessToken(accessToken); // แก้ไขให้รับแค่ accessToken
+    } else if (response.statusCode == 401) {
+      final accessToken = "";
+      userProvider.updateAccessToken(accessToken); // แก้ไขให้รับแค่ accessToken
     } else {
       throw Exception('Failed to refresh token');
     }

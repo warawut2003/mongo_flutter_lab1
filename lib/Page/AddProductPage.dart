@@ -29,27 +29,28 @@ class _AddProductPageState extends State<AddProductPage> {
         productType,
         price,
         unit,
-      ).then((_) {
-        // Success action here (e.g. navigate back or show success message)
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('เพิ่มสินค้าเรียบร้อยแล้ว')),
-        );
-        Navigator.pushReplacementNamed(context, '/admin');
-      }).catchError((error) {
-        // Check if the error is due to expired token
-        if (error.toString().contains('401')) {
-          // Token หมดอายุ ให้กลับไปยังหน้าจอ login
+      ).then((response) {
+        // ตรวจสอบว่าการเพิ่มสินค้าสำเร็จหรือไม่
+        if (response.statusCode == 201) {
+          // Success action here (e.g. navigate back or show success message)
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('token หมดอายุแล้ว กรุณา login ใหม่')),
+            SnackBar(content: Text('เพิ่มสินค้าเรียบร้อยแล้ว')),
           );
+          Navigator.pushReplacementNamed(context, '/admin');
+        } else if (response.statusCode == 401) {
+          // แสดงข้อความเมื่อเกิดข้อผิดพลาดในการเพิ่มสินค้า
           Navigator.pushNamedAndRemoveUntil(
               context, '/login', (route) => false);
-        } else {
-          // Error action here (e.g. show error message)
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('เกิดข้อผิดพลาด: $error')),
+            SnackBar(
+                content: Text('Refresh token expired. Please login again.')),
           );
         }
+      }).catchError((error) {
+        // แสดงข้อความเมื่อเกิดข้อผิดพลาด
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('เกิดข้อผิดพลาด: $error')),
+        );
       });
     }
   }

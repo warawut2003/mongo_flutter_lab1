@@ -34,7 +34,7 @@ class _EditProductPageState extends State<EditProductPage> {
   Future<void> _updateProduct(BuildContext context, String productId) async {
     final productController = ProductController();
     try {
-      await productController.updateProduct(
+      final response = await productController.updateProduct(
         context,
         productId,
         productName,
@@ -42,16 +42,22 @@ class _EditProductPageState extends State<EditProductPage> {
         price,
         unit,
       );
-      // If the update is successful, navigate back to the previous screen
-      Navigator.pushReplacementNamed(context, '/admin');
-      // You can also show a success message if needed
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('แก้ไขสินค้าเรียบร้อยแล้ว')),
-      );
+
+      if (response.statusCode == 200) {
+        Navigator.pushReplacementNamed(context, '/admin');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('แก้ไขสินค้าเรียบร้อยแล้ว')),
+        );
+      } else if (response.statusCode == 401) {
+        Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Refresh token expired. Please login again.')),
+        );
+      }
     } catch (error) {
       // Handle error
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('เกิดข้อผิดพลาดในการแก้ไขสินค้า: $error')),
+        SnackBar(content: Text('เกิดข้อผิดพลาด: $error')),
       );
     }
   }

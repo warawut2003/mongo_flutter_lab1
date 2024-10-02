@@ -116,12 +116,23 @@ class _HomeAdminState extends State<HomeAdmin> {
     // ถ้าผู้ใช้ยืนยันการลบ
     if (confirmDelete == true) {
       try {
-        await ProductController().deleteProduct(context, product.id);
-        // เรียกใช้งาน _fetchProducts เพื่อดึงข้อมูลสินค้าใหม่
-        await _fetchProducts();
+        final response =
+            await ProductController().deleteProduct(context, product.id);
 
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('ลบสินค้าสำเร็จ')));
+        if (response.statusCode == 200) {
+          Navigator.pushReplacementNamed(context, '/admin');
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text('ลบสินค้าสำเร็จ')));
+          // เรียกใช้งาน _fetchProducts เพื่อดึงข้อมูลสินค้าใหม่
+          await _fetchProducts();
+        } else if (response.statusCode == 401) {
+          Navigator.pushNamedAndRemoveUntil(
+              context, '/login', (route) => false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content: Text('Refresh token expired. Please login again.')),
+          );
+        }
       } catch (error) {
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error deleting product: $error')));

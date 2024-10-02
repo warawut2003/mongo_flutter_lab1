@@ -10,7 +10,6 @@ import 'package:provider/provider.dart';
 
 class ProductController {
   final _authController = AuthController();
-  static int retryCount = 0; // นับจำนวนการพยายามรีเฟรช token
 
   Future<List<ProductModel>> getProducts(BuildContext context) async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
@@ -33,19 +32,12 @@ class ProductController {
       } else if (response.statusCode == 401) {
         Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
         throw Exception(
-            'Wrong Token. Please login again.'); // เพิ่ม throw Exception
-      } else if (response.statusCode == 403 && retryCount <= 1) {
+            'Refresh token expired. Please login again.'); // เพิ่ม throw Exception
+      } else if (response.statusCode == 403) {
         // Refresh token and retry
         await _authController.refreshToken(context);
         accessToken = userProvider.accessToken;
-        retryCount++;
-
         return await getProducts(context);
-      } else if (response.statusCode == 403 && retryCount > 1) {
-        // ข้อความเมื่อ token หมดอายุ
-        Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
-        throw Exception(
-            'Token expired. Please login again.'); // เพิ่ม throw Exception
       } else {
         throw Exception(
             'Failed to load products with status code: ${response.statusCode}');
@@ -56,7 +48,7 @@ class ProductController {
     }
   }
 
-  Future<void> InsertProduct(BuildContext context, String productName,
+  Future<http.Response> InsertProduct(BuildContext context, String productName,
       String productType, double price, String unit) async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     var accessToken = userProvider.accessToken;
@@ -77,44 +69,27 @@ class ProductController {
         },
         body: jsonEncode(InsertData),
       );
+
       // Handle successful product insertion
       if (response.statusCode == 201) {
         print("Product inserted successfully!");
-      } else if (response.statusCode == 401) {
-        Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
-        throw Exception(
-            'Wrong Token. Please login again.'); // เพิ่ม throw Exception
-      }
-      // If accessToken is expired or unauthorized, refresh the token
-      else if (response.statusCode == 403 && retryCount <= 1) {
-        print("Access token expired. Refreshing token...");
-
-        // Refresh the accessToken
+        return response; // ส่งคืน response เมื่อเพิ่มสินค้าสำเร็จ
+      } else if (response.statusCode == 403) {
         await _authController.refreshToken(context);
-        accessToken =
-            userProvider.accessToken; // Update the accessToken after refresh
-        retryCount++;
+        accessToken = userProvider.accessToken;
 
         return await InsertProduct(
             context, productName, productType, price, unit);
-      } else if (response.statusCode == 403 && retryCount > 1) {
-        Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
-        throw Exception(
-            'Token expired. Please login again.'); // เพิ่ม throw Exception
       } else {
-        print("Failed to insert product. Status code: ${response.statusCode}");
-
-        throw Exception(
-            'Failed to insert product. Server response: ${response.body}');
+        return response; // ส่งคืน response
       }
     } catch (error) {
       // Catch and print any errors during the request
-      print('Error inserting product: $error');
-      throw Exception('Failed to insert product due to error: $error');
+      throw Exception('Failed to insert product');
     }
   }
 
-  Future<void> updateProduct(BuildContext context, String productId,
+  Future<http.Response> updateProduct(BuildContext context, String productId,
       String productName, String productType, double price, String unit) async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     var accessToken = userProvider.accessToken;
@@ -140,42 +115,25 @@ class ProductController {
       // Handle successful product update
       if (response.statusCode == 200) {
         print("Product updated successfully!");
-      } else if (response.statusCode == 401) {
-        Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
-        throw Exception(
-            'Wrong Token. Please login again.'); // เพิ่ม throw Exception
-      }
-      // If accessToken is expired or unauthorized, refresh the token
-      else if (response.statusCode == 403 && retryCount <= 1) {
-        print("Access token expired. Refreshing token...");
-
+        return response; // ส่งคืน response
+      } else if (response.statusCode == 403) {
         // Refresh the accessToken
         await _authController.refreshToken(context);
         accessToken =
             userProvider.accessToken; // Update the accessToken after refresh
-        retryCount++;
 
-        // Retry updating the product with the new accessToken
         return await updateProduct(
             context, productId, productName, productType, price, unit);
-      } else if (response.statusCode == 403 && retryCount > 1) {
-        Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
-        throw Exception(
-            'Token expired. Please login again.'); // เพิ่ม throw Exception
       } else {
-        print("Failed to update product. Status code: ${response.statusCode}");
-
-        throw Exception(
-            'Failed to update product. Server response: ${response.body}');
+        return response; // ส่งคืน response
       }
     } catch (error) {
-      // Catch and print any errors during the request
-      print('Error updating product: $error');
-      throw Exception('Failed to update product due to error: $error');
+      throw Exception('Failed to update product');
     }
   }
 
-  Future<void> deleteProduct(BuildContext context, String productId) async {
+  Future<http.Response> deleteProduct(
+      BuildContext context, String productId) async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     var accessToken = userProvider.accessToken;
 
@@ -190,31 +148,17 @@ class ProductController {
 
       if (response.statusCode == 200) {
         print("Product deleted successfully!");
-      } else if (response.statusCode == 401) {
-        Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
-        throw Exception(
-            'Wrong Token. Please login again.'); // เพิ่ม throw Exception
-      } else if (response.statusCode == 403 && retryCount <= 1) {
-        print("Access token expired. Refreshing token...");
-
+        return response; // ส่งคืน response
+      } else if (response.statusCode == 403) {
         // Refresh the accessToken
         await _authController.refreshToken(context);
         accessToken = userProvider.accessToken;
-        retryCount++;
 
         return await deleteProduct(context, productId);
-      } else if (response.statusCode == 403 && retryCount > 1) {
-        Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
-        throw Exception(
-            'Token expired. Please login again.'); // เพิ่ม throw Exception
       } else {
-        print("Failed to delete product. Status code: ${response.statusCode}");
-        Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
-        throw Exception(
-            'Failed to delete product. Server response: ${response.body}');
+        return response; // ส่งคืน response
       }
     } catch (error) {
-      print('Error deleting product: $error');
       throw Exception('Failed to delete product due to error: $error');
     }
   }
